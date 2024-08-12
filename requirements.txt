@@ -1,0 +1,9 @@
+flask
+pygments
+flask_socketio
+spotlib
+asyncio
+aiohttp
+pathlib
+spotdl
+pygments
