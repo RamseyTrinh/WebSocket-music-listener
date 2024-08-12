@@ -109,3 +109,5 @@ ENV/
 .env
 .cache
 incoming.spotdl
+library/
+libdata.json
