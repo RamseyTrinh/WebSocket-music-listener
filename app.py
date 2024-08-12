@@ -1,5 +1,11 @@
-from flask import Flask, render_template, send_from_directory, jsonify, request, send_file, abort
+from flask import Flask, render_template, send_from_directory, jsonify, request, send_file, abort, make_response
 from flask_socketio import SocketIO, emit
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import String
+from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+import uuid
 import logging
 import time
 import os
@@ -14,6 +20,36 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*",
                     logger=True, engineio_logger=True)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///users.db"
+db = SQLAlchemy(model_class=Base)
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
+
+
+class User(db.Model):
+    id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(250), nullable=False)
+    role: Mapped[str] = mapped_column(String(20), nullable=False)
+
+
+with app.app_context():
+    db.create_all()
+
 
 global current_timestamp, is_playing, queue, current_song_index, last_update_time
 current_timestamp = 0
@@ -31,6 +67,86 @@ LIBDATA_FILE = 'libdata.json'
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/mainpage')
+@login_required
+def mainpage():
+    return render_template('mainpage.html')
+
+
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        email = request.form.get('email')
+        result = db.session.execute(db.select(User).where(User.email == email))
+        user = result.scalar()
+        if user:
+            flash("This email is already registered. Please use a different email or log in.")
+            return redirect(url_for('register'))
+        hash_and_salted_password = generate_password_hash(
+            request.form.get('password'),
+            method='pbkdf2:sha256',
+            salt_length=8
+        )
+        new_user = User(
+            id=uuid.uuid4(),
+            email=request.form.get('email'),
+            password=hash_and_salted_password,
+            name=request.form.get('name'),
+            role=request.form.get('role')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        response = {
+            "message": "Login successful",
+            "user": {
+                "id": new_user.id,
+                "email": new_user.email,
+                "name": new_user.name,
+                "role": new_user.role
+            }
+        }
+        return make_response(jsonify(response), 200)
+    
+    return render_template("register.html")
+
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get('email')
+        password = request.form.get('password')
+        result = db.session.execute(db.select(User).where(User.email == email))
+        user = result.scalar()
+        if not user:
+            flash("That email does not exist, please try again.")
+            return redirect(url_for('login'))
+        elif not check_password_hash(user.password, password):
+            flash('Password incorrect, please try again.')
+            return redirect(url_for('login'))
+        else:
+            login_user(user)
+            response = {
+                "message": "Login successful",
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "name": user.name,
+                    "role": user.role
+                }
+            }
+            return make_response(jsonify(response), 200)
+   
+    return render_template("login.html")
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 
 @app.route('/music/<encoded_path>')
