@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Jukebox</title>
+    <title>FCI Music Bot</title>
     <!-- VERSION X12:51 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link
@@ -25,21 +25,10 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   </head>
   <body>
-    <dialog id="joinModal" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">Join in</h3>
-        <p class="py-4">Click Below to Join the Session</p>
-        <div class="modal-action">
-          <form method="dialog">
-            <!-- if there is a button in form, it will close the modal -->
-            <button class="btn" onclick="playpause()">Join</button>
-          </form>
-        </div>
-      </div>
-    </dialog>
     <div class="navbar bg-base-300">
-      <button class="btn btn-ghost text-xl">Jukebox</button> <span class="text-sm" style="margin-right: 10px" id="serverversion">1.5</span></a>
-      <div class="badge badge-neutral badge-sm">Beta</div>&nbsp;
+      <button class="btn btn-ghost text-xl">FCI Music Bot</button> <span class="text-sm" style="margin-right: 10px" id="serverversion">1.0</span></a>
+      <button class="btn btn-ghost" onclick="window.location.href='radioQueue'">Radio Queue</button>
+      <button class="btn btn-ghost" style="margin-left: auto;" onclick="window.location.href='login'">Login</button>
     </div>
     <div class="flex">
       <div class="w-2/3 h-96">
@@ -88,70 +77,7 @@
             </svg>
           </div>
         </div>
-        <div class="flex">
-          <div class="p-2">
-            <div
-              class="btn btn-error cursor-pointer amplitude-next px-2"
-              onclick="clearQueueModal.showModal()"
-            >
-              <span>
-                <svg
-                  class="w-6 h-6 text-gray-800"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-width="2"
-                    d="m6 6 12 12m3-6a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </span>
-              Clear Queue
-            </div>
-            <dialog id="clearQueueModal" class="modal">
-              <div class="modal-box">
-                <h3 class="font-bold text-lg">Warning!</h3>
-                <p class="py-4">
-                  Are you sure you want to clear? This Action is irreverible.
-                </p>
-                <div class="modal-action">
-                  <form method="dialog">
-                    <!-- if there is a button in form, it will close the modal -->
-                    <button class="btn" onclick="clearQueue()">Yes</button>
-                    <button class="btn">No</button>
-                  </form>
-                </div>
-              </div>
-            </dialog>
-            <div
-              class="btn btn-success cursor-pointer amplitude-next px-2"
-              onclick="shuffleQueue()"
-            >
-              <span>
-                <span class="material-symbols-outlined"> shuffle </span></span
-              >
-              Shuffle
-            </div>
-          </div>
-          <!-- create a volume slider -->
-          <div class="p-2">
-            <label class="label">
-              <span class="font-bold font-sm" style="margin-right:20px;">Volume</span>
-              <input
-                type="range"
-                class="range"
-                value="50"
-                onchange="audio.volume = this.value / 100"
-              />
-            </label>
-          </div>
-        </div>
+        
         <div class="overflow-x-auto">
           <table class="table">
             <thead>
@@ -295,7 +221,7 @@
         </div>
         <footer style="margin-top:50px;">
           <div class="w-full">
-              <span style="margin:20px;">Made with ❤️ by The Homework Club (Homework Club © 2024) <br>
+              <span style="margin:20px;">Made by Scylla <br>
               <div class="divider">
               </div>
           </div>

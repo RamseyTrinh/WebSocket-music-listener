@@ -1,5 +1,6 @@
-from flask import Flask, render_template, send_from_directory, jsonify, request, send_file, abort, make_response
+from flask import Flask, render_template, send_from_directory, jsonify, request, session, abort, make_response, flash, redirect, url_for
 from flask_socketio import SocketIO, emit
+from flask_cors import CORS, cross_origin
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -17,6 +18,7 @@ import base64
 from music_downloader import maindownload
 
 app = Flask(__name__)
+cors = CORS(app)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*",
                     logger=True, engineio_logger=True)
@@ -24,7 +26,6 @@ socketio = SocketIO(app, cors_allowed_origins="*",
 
 class Base(DeclarativeBase):
     pass
-
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///users.db"
 db = SQLAlchemy(model_class=Base)
@@ -39,12 +40,14 @@ def load_user(user_id):
     return db.get_or_404(User, user_id)
 
 
-class User(db.Model):
-    id: Mapped[str] = mapped_column(String(100), primary_key=True)
-    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(100), nullable=False)
-    name: Mapped[str] = mapped_column(String(250), nullable=False)
-    role: Mapped[str] = mapped_column(String(20), nullable=False)
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    
+    id = db.Column(db.String(36), primary_key=True)  # Ensure this is a String
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
 
 
 with app.app_context():
@@ -69,13 +72,11 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/mainpage')
-@login_required
+@app.route('/radioQueue')
 def mainpage():
-    return render_template('mainpage.html')
+    return render_template('radioQueue.html')
 
-
-@app.route('/register', methods=["GET", "POST"])
+@app.route('/register', methods=["POST"])
 def register():
     if request.method == "POST":
         email = request.form.get('email')
@@ -90,7 +91,7 @@ def register():
             salt_length=8
         )
         new_user = User(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             email=request.form.get('email'),
             password=hash_and_salted_password,
             name=request.form.get('name'),
@@ -98,7 +99,6 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
-        login_user(new_user)
         response = {
             "message": "Login successful",
             "user": {
@@ -109,23 +109,21 @@ def register():
             }
         }
         return make_response(jsonify(response), 200)
-    
-    return render_template("register.html")
 
-
-@app.route('/login', methods=["GET", "POST"])
+@app.route('/login', methods=["POST", "GET"])
 def login():
     if request.method == "POST":
-        email = request.form.get('email')
-        password = request.form.get('password')
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
         result = db.session.execute(db.select(User).where(User.email == email))
         user = result.scalar()
         if not user:
-            flash("That email does not exist, please try again.")
-            return redirect(url_for('login'))
+            return jsonify({"message": "That email does not exist, please try again."}), 400
+            
         elif not check_password_hash(user.password, password):
             flash('Password incorrect, please try again.')
-            return redirect(url_for('login'))
+            return jsonify({"message": "Password incorrect, please try again."}), 400
         else:
             login_user(user)
             response = {
@@ -138,9 +136,7 @@ def login():
                 }
             }
             return make_response(jsonify(response), 200)
-   
     return render_template("login.html")
-
 
 @app.route('/logout')
 @login_required
@@ -242,7 +238,6 @@ def handle_play(data):
     last_update_time = time.time()
     emit('play', {'timestamp': current_timestamp}, broadcast=True)
 
-
 @socketio.on('pause')
 def handle_pause(data):
     global is_playing, current_timestamp, last_update_time
@@ -256,13 +251,11 @@ def handle_pause(data):
     last_update_time = time.time()
     emit('pause', {'timestamp': current_timestamp}, broadcast=True)
 
-
 @socketio.on('request_sync')
 def handle_request_sync():
     global current_timestamp, is_playing, last_update_time
     logging.debug("Sync request received")
     emit('sync', {'timestamp': current_timestamp, 'is_playing': is_playing})
-
 
 @socketio.on('sync')
 def handle_sync(data):
@@ -281,7 +274,6 @@ def handle_sync(data):
     emit('sync', {'timestamp': current_timestamp,
          'is_playing': is_playing}, broadcast=True)
 
-
 @socketio.on('timestamp')
 def handle_timestamp(data):
     global current_timestamp, last_update_time
@@ -294,7 +286,6 @@ def handle_timestamp(data):
         emit('sync', {'timestamp': current_timestamp,
              'is_playing': is_playing}, broadcast=True)
 
-
 @socketio.on('seek')
 def handle_seek(data):
     global current_timestamp, last_update_time, is_playing
@@ -306,10 +297,6 @@ def handle_seek(data):
         emit('sync', {'timestamp': current_timestamp, 'is_playing': is_playing, 'action': 'seek'}, broadcast=True)
     else:
         logging.warning("Timestamp not found in seek data")
-
-
-
-
 
 @socketio.on('next_song')
 def handle_next_song():
@@ -332,7 +319,6 @@ def handle_next_song():
         is_playing = False
         emit('pause', {'timestamp': 0}, broadcast=True)
 
-
 @socketio.on('prev_song')
 def handle_prev_song():
     global current_song_index, queue, current_timestamp, is_playing, last_update_time
@@ -353,7 +339,6 @@ def handle_prev_song():
     else:
         is_playing = False
         emit('pause', {'timestamp': 0}, broadcast=True)
-
 
 @socketio.on('select_song')
 def handle_select_song(data):
@@ -400,4 +385,4 @@ def load_library():
 
 if __name__ == '__main__':
     load_library()
-    socketio.run(app, host='0.0.0.0', port=5135, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=5135, allow_unsafe_werkzeug=True, debug=True)

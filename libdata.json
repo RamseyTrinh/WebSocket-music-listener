@@ -1,1 +1,80 @@
-[]
+[
+    {
+        "name": "Chúng Ta Của Tương Lai",
+        "artists": [
+            "Sơn Tùng M-TP"
+        ],
+        "artist": "Sơn Tùng M-TP",
+        "genres": [
+            "v-pop",
+            "vietnamese idol pop",
+            "vietnamese melodic rap"
+        ],
+        "disc_number": 1,
+        "disc_count": 1,
+        "album_name": "Chúng Ta Của Tương Lai",
+        "album_artist": "Sơn Tùng M-TP",
+        "album_type": "single",
+        "duration": 249,
+        "year": 2024,
+        "date": "2024-03-08",
+        "track_number": 1,
+        "tracks_count": 1,
+        "song_id": "3OVMe3H6iAxbLF8iD2UYrw",
+        "explicit": false,
+        "publisher": "Universal Music Indochina Distributed Labels",
+        "url": "https://open.spotify.com/track/3OVMe3H6iAxbLF8iD2UYrw",
+        "isrc": "FR96X2423953",
+        "cover_url": "https://i.scdn.co/image/ab67616d0000b273b5a7da0c97f51481d6f7a3c6",
+        "copyright_text": "© 2024 M-TP Entertainment Ltd.",
+        "download_url": null,
+        "lyrics": null,
+        "popularity": 66,
+        "album_id": "4ZSKIwN9yS4wP9GOfxaDB3",
+        "list_name": null,
+        "list_url": null,
+        "list_position": null,
+        "list_length": null,
+        "artist_id": "5dfZ5uSmzR7VQK0udbAVpf",
+        "path": "./library\\Sơn Tùng M-TP - Chúng Ta Của Tương Lai.mp3"
+    },
+    {
+        "name": "Chúng Ta Của Hiện Tại",
+        "artists": [
+            "Sơn Tùng M-TP"
+        ],
+        "artist": "Sơn Tùng M-TP",
+        "genres": [
+            "v-pop",
+            "vietnamese idol pop",
+            "vietnamese melodic rap"
+        ],
+        "disc_number": 1,
+        "disc_count": 1,
+        "album_name": "Chúng Ta Của Hiện Tại",
+        "album_artist": "Sơn Tùng M-TP",
+        "album_type": "single",
+        "duration": 301,
+        "year": 2020,
+        "date": "2020-12-20",
+        "track_number": 1,
+        "tracks_count": 1,
+        "song_id": "1J3SmWwlYAG68LGKr86MVH",
+        "explicit": false,
+        "publisher": "Universal Music Indochina Distributed Labels",
+        "url": "https://open.spotify.com/track/1J3SmWwlYAG68LGKr86MVH",
+        "isrc": "DGA062020720",
+        "cover_url": "https://i.scdn.co/image/ab67616d0000b2732cd9649ea111a552283f0165",
+        "copyright_text": "© 2023 VIVI ENM Co. Ltd.",
+        "download_url": null,
+        "lyrics": null,
+        "popularity": 64,
+        "album_id": "1V77kA4O1MlAUwfyBONfp1",
+        "list_name": null,
+        "list_url": null,
+        "list_position": null,
+        "list_length": null,
+        "artist_id": "5dfZ5uSmzR7VQK0udbAVpf",
+        "path": "./library\\Sơn Tùng M-TP - Chúng Ta Của Hiện Tại.mp3"
+    }
+]
