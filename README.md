@@ -4,7 +4,7 @@
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/thehomeworkclub/jukebox.git
+git clone https://github.com/RamseyTrinh/Webpack-music-listener.git
 cd Webpack-music
 ```
 
